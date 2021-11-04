@@ -1,1 +1,36 @@
-// TODO
+.container {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 2rem;
+
+}
+
+.postContainer {
+    max-width: 700px;
+    margin: 5rem auto 0;
+    height: 108px;
+
+    img {
+        margin: 0 auto 4rem;
+    }
+
+    h1 {
+        font-size: 1.625rem;
+        line-height: 2.250rem;
+    }
+
+    span {
+        display: block;
+        margin-bottom: 24px;
+    }
+}
+
+.footer {
+    display: flex;
+    gap: 24px;
+
+    span {
+        display: flex;
+        gap: 8px;
+    }
+}
