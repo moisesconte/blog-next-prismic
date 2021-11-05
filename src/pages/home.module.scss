@@ -1,18 +1,6 @@
-.container {
-    max-width: 1120px;
-    margin: 0 auto;
-    padding: 0 2rem;
-
-}
-
-.postContainer {
-    max-width: 700px;
-    margin: 5rem auto 0;
-    height: 108px;
-
-    img {
-        margin: 0 auto 4rem;
-    }
+.postsContainer {
+     max-width: 700px;
+     margin: 0 auto 2rem;
 
     h1 {
         font-size: 1.625rem;
@@ -25,12 +13,33 @@
     }
 }
 
-.footer {
+.post {
+    max-width: 700px;
+    margin: 0 auto 1rem;
+}
+
+.postFooter {
     display: flex;
     gap: 24px;
 
     span {
         display: flex;
         gap: 8px;
+    }
+}
+
+.footer {
+    margin-top: 1.5rem;
+
+    span {
+        display: block;
+        color: var(--highlight);
+        cursor: pointer;
+
+        transition: filter 0.2s;
+
+        &:hover {
+            filter: brightness(0.9);
+        }
     }
 }
