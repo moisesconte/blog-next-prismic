@@ -5,7 +5,7 @@ export default function Header() {
 	const router = useRouter();
 
 	function handleGoToHome() {
-		router.push('/')
+		router.push('/','/',{});
 	}
 
 	return (

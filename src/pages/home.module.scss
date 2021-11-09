@@ -16,6 +16,8 @@
 .post {
     max-width: 700px;
     margin: 0 auto 1rem;
+
+    cursor: pointer;
 }
 
 .postFooter {
@@ -23,6 +25,11 @@
     gap: 24px;
 
     span {
+        display: flex;
+        gap: 8px;
+    }
+
+    time {
         display: flex;
         gap: 8px;
     }
