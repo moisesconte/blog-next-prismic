@@ -32,15 +32,39 @@ interface Post {
 
 interface PostProps {
 	post: Post;
-    readingTime: string;
 }
 
-export default function Post({ post, readingTime }:PostProps) {
+export default function Post({ post }:PostProps) {
     const router = useRouter();
 
     if(router.isFallback) {
         return <div>Carregando...</div>
     }
+
+    function formatDate(date: string) {
+        return format(
+			new Date(date),
+			"dd MMM yyyy",
+			{locale: ptBR}
+		);
+    }
+
+    function readingTime() {
+        const counterWords = post.data.content.reduce((acc, content) => {
+            let soma = 0;
+    
+            soma += content.heading.split(/\s+/g).length;
+    
+            soma += content.body.reduce((acc, body) => {
+                return acc + body.text.split(/\s+/g).length;
+            },0);
+           
+            return acc + soma;
+        },0);
+    
+        return `${Math.ceil(counterWords / 200).toString()} min`
+    }
+
 
 	return (
 		<>
@@ -59,7 +83,7 @@ export default function Post({ post, readingTime }:PostProps) {
                         <div className={styles.postDetailContent}>
                             <div className={styles.detail}>
                                 <FaCalendarDay />
-                                <time>{post.first_publication_date}</time>
+                                <time>{formatDate(post.first_publication_date)}</time>
                             </div>
                             <div className={styles.detail}>
                                 <FaUser />
@@ -67,15 +91,16 @@ export default function Post({ post, readingTime }:PostProps) {
                             </div>
                             <div className={styles.detail}>
                                 <FaClock />
-                                <span>{readingTime}</span>
+                                <time>{readingTime()}</time>
                             </div>
                         </div>
 
                         {post.data.content.map((content, index) => (
                             <div key={index} className={styles.postContent}>
-                                <h2>{content.heading}</h2>
-                                <div 
-                                    dangerouslySetInnerHTML={{__html: content.body[0].text}}
+                                <h2>{content.heading}</h2>                                
+                                <div
+                                    className={styles.postBody} 
+                                    dangerouslySetInnerHTML={{__html: RichText.asHtml(content.body)}}
                                 />
                             </div>
                         ))}
@@ -100,7 +125,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
   const slugs = posts.results.map((post) => {
       return {
-          params: {slug: post.uid}
+        params: {slug: post.uid}
       }
   });  
 
@@ -116,19 +141,31 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     const prismic = getPrismicClient();
     const response = await prismic.getByUID('post', String(slug), {});
 
-    const post: Post = {
-		first_publication_date: format(
-			new Date(response.first_publication_date),
-			"dd MMM yyyy",
-			{locale: ptBR}
-		).toString(),
+    const post = {
+        uid: response.uid,
+		first_publication_date: response.first_publication_date,
 		data: {
 			title: response.data.title,
 			author: response.data.author,
 			banner: {
                 url: response.data.banner.url
             },
-            content: response.data.content.map((content) => {
+            content: response.data.content,
+            subtitle: response.data.subtitle,            
+		},       
+    }
+
+/**
+ * 
+ * content: response.data.content.map((content) => {
+                return {
+                    heading: content.heading,
+                    body: content.body                 
+                }
+            }),
+ * 
+ * 
+ * content: response.data.content.map((content) => {
                 return {
                     heading: content.heading,
                     body: [{
@@ -136,23 +173,8 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
                     }]                 
                 }
             }),
-		}
-    }
-
-
-    const counterWords = post.data.content.reduce((acc, content) => {
-        let soma = 0;
-
-        soma += content.heading.split(/\s+/g).length;
-
-        soma += content.body.reduce((acc, body) => {
-            return acc + body.text.split(/\s+/g).length;
-        },0);
-       
-        return acc + soma;
-    },0);
-
-    const readingTime = `${Math.ceil(counterWords / 200).toString()} min`
+ */
+    
 
     //console.log(JSON.stringify(response,null,2))
     //console.log(JSON.stringify(post,null,2))
@@ -161,7 +183,6 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   return {
       props: {
         post,
-        readingTime
       }
   }
 };

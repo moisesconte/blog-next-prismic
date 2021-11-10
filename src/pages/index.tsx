@@ -10,7 +10,7 @@ import ptBR from 'date-fns/locale/pt-BR';
 
 import commonStyles from '../styles/common.module.scss';
 import styles from './home.module.scss';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface Post {
 	uid?: string;
@@ -32,38 +32,37 @@ interface HomeProps {
 }
 
 export default function Home({ postsPagination } : HomeProps) {
-	const [posts, setPosts] = useState<PostPagination>({} as PostPagination);
+	const [posts, setPosts] = useState<PostPagination>(postsPagination);
 
-	useEffect(() => {
-		setPosts(postsPagination);
-	},[]);
+	function formatDate(data: string) {
+		return format(
+			new Date(data),
+			"dd MMM yyyy",
+			{locale: ptBR}
+		)
+	}
 
 	async function carregarMaisPost(){
 		const response = await fetch(postsPagination.next_page,{method: 'GET'});
 		if(response.ok) {
 			const json = await response.json();
-			//console.log(json);
-
+			//console.log(json);			 
+			
 			const listPost = json.results.map((post: Post) => {
 				return {
 					uid: post.uid,
-					first_publication_date: format(
-						new Date(post.first_publication_date),
-						"LL LLL yyyy",
-						{locale: ptBR}
-					).toString(),
+					first_publication_date: post.first_publication_date,
 					data: {
 						title: post.data.title,
 						subtitle: post.data.subtitle,
 						author: post.data.author,
 					}
 				}
-			});
+			});			
 
 			setPosts(prev => { return {next_page: json.next_page, results: [...prev.results, ...listPost]}})
 			//console.log(listPost);
 		}	
-
 	}
 
 	return (
@@ -75,15 +74,17 @@ export default function Home({ postsPagination } : HomeProps) {
 
 				<div className={styles.postsContainer}>
 					
-					{posts?.results?.map((post, index) => (
+					{posts.results.map((post, index) => (
 						<Link key={index} href={`/post/${post.uid}`}>
 							<a>
 								<div className={styles.post}>
-									<h1>{post?.data?.title}</h1>
-									<span>{post?.data?.subtitle}</span>
+									
+										<h1>{post.data.title}</h1>
+									
+									<span>{post.data.subtitle}</span>
 									<div className={styles.postFooter}>
-										<time><FaCalendarDay size={15} />{post.first_publication_date}</time>
-										<span><FaUser size={15} />{post?.data?.author}</span>
+										<time><FaCalendarDay size={15} />{formatDate(post.first_publication_date)}</time>
+										<span><FaUser size={15} />{post.data.author}</span>
 									</div>
 								</div>
 							</a>
@@ -101,6 +102,7 @@ export default function Home({ postsPagination } : HomeProps) {
 
 export const getStaticProps: GetStaticProps = async () => {
    const prismic = getPrismicClient();
+
    const postsResponse = await prismic.query([
 	   Prismic.Predicates.at('document.type', 'post')
    ], {
@@ -109,14 +111,10 @@ export const getStaticProps: GetStaticProps = async () => {
    });
 
    const posts = postsResponse.results.map(post => {		
-		
+	
 		return {
 		   uid: post.uid,
-		   first_publication_date: format(
-			new Date(post.first_publication_date),
-			"LL LLL yyyy",
-			{locale: ptBR}
-		),
+		   first_publication_date: post.first_publication_date,
 		   data: {
 			title: post.data.title,
 			subtitle: post.data.subtitle,
@@ -125,7 +123,7 @@ export const getStaticProps: GetStaticProps = async () => {
 		}
    });
 
-   //console.log(posts)
+   //console.log(postsResponse)
    //console.log(JSON.stringify(postsResponse,null,2));
 
    return {
